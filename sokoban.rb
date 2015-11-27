@@ -1,5 +1,6 @@
 require 'dispel'
 require 'console_splash'
+require_relative 'level'
 
 def load_levels
   levels = []
@@ -7,7 +8,7 @@ def load_levels
     level = File.readlines(xsb_file)
     #convert level from array of strings to 2darray of chars
     level.map! do |line|
-      line.chars.to_a
+      line.chomp.chars.to_a
     end
     levels << level
   end
@@ -33,48 +34,6 @@ def error(str)
   exit 1
 end
 
-def get_start_pos(level)
-  level.each_with_index  do |line,y|
-    line.each_with_index  do |char,x|
-      if char == '@'
-        return [y,x]
-      end
-    end
-  end
-  error('level is missing a player start pos!')
-end
-
-def make_view(buffer)
-  (buffer.map do |buff_line|
-    buff_line.join('')
-  end).join("\n")
-end
-
-def draw_level(screen,level,width,height,player_pos)
-  buff = Array.new(height) { Array.new(width) }
-  level.each_with_index  do |line,y|
-    buff[y] = []
-    line.each_with_index  do |char,x|
-      if char != '@' && char != "\n"
-        buff[y][x] = char
-      else
-        buff[y][x] = ' '
-      end
-    end
-  end
-  buff[player_pos[0]][player_pos[1]] = '@'
-  screen.draw(make_view(buff))
-end
-
-def get_level_size(level)
-  width = level.length
-  height = 0
-  level.each_with_index  do |line,y|
-    height = [height,line.length].max
-  end
-  [width,height]
-end
-
 def clamp(min,max,val)
   [[val,max].min,min].max
 end
@@ -84,31 +43,46 @@ def clamp_pos(min_x,min_y,max_x,max_y,pos)
    clamp(min_x,max_x,pos[1])]
 end
 
-def move_player(level,pos,delta)
+def in_wall(level,pos)
+  level[pos[0]][pos[1]] == '#'
+end
 
+def move_player(level,pos,delta)
+  new_pos = [pos[0]+delta[0],pos[1]+delta[1]]
+  if in_wall(level,new_pos)
+    pos
+  else
+    new_pos
+  end
 end
 
 def main_loop(levels,screen)
   quit = false
-  level = 0
-  player_pos = get_start_pos(levels[level])
-  (width,height) = get_level_size(levels[level])
-  draw_level(screen,levels[level],width,height,player_pos)
+  level_num = 0
+  level = Level.new(levels[level_num])
+  screen.draw *level.make_view
   Dispel::Keyboard.output do |key|
-   case key
-     when 'q' then break
-     when :down then player_pos[0]+=1
-     when :up then player_pos[0]-=1
-     when :right then player_pos[1]+=1
-     when :left then player_pos[1]-=1
-   end
-   player_pos = clamp_pos(0,0,width,height,player_pos)
-   draw_level(screen,levels[level],width,height,player_pos)
+    case key
+      when 'q' then break
+      when :down then  level.player.move([1,0])
+      when :up then level.player.move([-1,0])
+      when :right then level.player.move([0,1])
+      when :left then level.player.move([0,-1])
+      when 'r' then level = Level.new(levels[level_num])
+      when 'n'
+        level_num += 1
+        level = Level.new(levels[level_num])
+    end
+    screen.draw *level.make_view
+    if level.complete?
+      level_num += 1
+      level = Level.new(levels[level_num])
+    end
   end
 end
 
 do_splash
 levels = load_levels
-Dispel::Screen.open do |screen|
+Dispel::Screen.open(:colors => true) do |screen|
   main_loop(levels,screen)
 end
