@@ -1,5 +1,5 @@
 This module *can* run on windows, but unless you feel like spending an hour or more installing some form of curses
-library for the curses gem then I'd recommend you run it on a *nix system (which would include mac).
+library for the curses gem (required by dispel) then I'd recommend you run it on a *nix system or a mac.
 
 To play run the following commands:
 `bundle install`
