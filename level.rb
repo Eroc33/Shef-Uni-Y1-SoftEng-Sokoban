@@ -18,8 +18,8 @@ class Level
   end
 
   #create a string to draw to the console
-  def make_view(buff)
-    #buff = Array.new(@height) { Array.new(@width) }
+  def make_view(lines,columns)
+    buff = Array.new(lines) { Array.new(columns) }
     map = Dispel::StyleMap.new(buff.length)
     @static.each_with_index  do |line,y|
       buff[y] = []
