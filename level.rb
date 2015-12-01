@@ -2,18 +2,24 @@ require 'dispel'
 require_relative  'box'
 require_relative  'player'
 
+def error(str)
+  puts str
+  exit 1
+end
+
 class Level
 
   attr_reader :static, :moving, :player, :width, :height
 
-  def initialize(level_arr)
-    (@static,@moving,start_pos) = parse_level(level_arr)
+  def initialize(level_file_lines)
+    (@static,@moving,start_pos) = parse_level(level_file_lines)
     @player = Player.new(self,start_pos)
     (@width,@height) = size
   end
 
-  def make_view
-    buff = Array.new(@height) { Array.new(@width) }
+  #create a string to draw to the console
+  def make_view(buff)
+    #buff = Array.new(@height) { Array.new(@width) }
     map = Dispel::StyleMap.new(buff.length)
     @static.each_with_index  do |line,y|
       buff[y] = []
@@ -36,16 +42,21 @@ class Level
 
     @moving.each do |box|
       map.add(['#654321','#000000'], box.y, box.x..box.x)
-      buff[box.y][box.x] = '$'
+      if static_at([box.y,box.x]) == :storage
+        buff[box.y][box.x] = '*'
+      else
+        buff[box.y][box.x] = '$'
+      end
     end
 
     map.add(:reverse, @player.y, @player.x..@player.x)
 
     [(buff.map do |buff_line|
       buff_line.join('')
-    end).join("\n"),map]
+    end),map]
   end
 
+  #returns true if there is a ''moving object'' at pos
   def moving_at?(pos)
     @moving.each do |moving|
       if moving.pos == pos
@@ -55,6 +66,7 @@ class Level
     false
   end
 
+  #return the ''moving object'' at pos
   def moving_at(pos)
     @moving.each do |moving|
       if moving.pos == pos
@@ -64,32 +76,26 @@ class Level
     nil
   end
 
+  #return a symbol for the type of static object at pos
   def static_at(pos)
     @static[pos[0]][pos[1]]
   end
 
-  def set_filled(pos)
-    @static[pos[0]][pos[1]] = :filled
-  end
-
+  #have we completed the level
   def complete?
-    not @static.any? do |row|
-      row.any? do |tile|
-        tile == :storage
-      end
+    @moving.all? do |box|
+      static_at([box.y,box.x]) == :storage
     end
   end
 
-  def remove_moving(moving)
-    @moving.delete(moving)
-  end
-
+  #is pos a wall
   def in_wall?(pos)
-    @static[pos[0]][pos[1]] == :wall
+    static_at(pos) == :wall
   end
 
   protected
 
+  #load a level array
   def parse_level(level_arr)
     start_pos = [0,0]
     static = []
@@ -107,6 +113,13 @@ class Level
             static[y][x] = :wall
           when '.'
             static[y][x] = :storage
+          when ' '
+            static[y][x] = :none
+          when '*'
+            moving << Box.new(self,[y,x])
+            static[y][x] = :storage
+          else
+            error('Unknown symbol in level file!')
         end
       end
     end
