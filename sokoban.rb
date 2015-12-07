@@ -147,7 +147,7 @@ def menu(screen,max_level)
     else
       case key
         when 's'
-          return 1
+          return 0
         when 'l'
           selecting = true
         when 'q'
