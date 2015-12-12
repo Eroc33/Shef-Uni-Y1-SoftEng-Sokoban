@@ -1,0 +1,19 @@
+GEM
+  remote: https://rubygems.org/
+  specs:
+    colorize (0.7.7)
+    console_splash (2.0.1)
+      colorize
+    curses (1.0.1)
+    dispel (0.0.7)
+      curses
+
+PLATFORMS
+  ruby
+
+DEPENDENCIES
+  console_splash
+  dispel
+
+BUNDLED WITH
+   1.10.6
