@@ -2,6 +2,8 @@ This module *can* run on windows, but unless you feel like spending an hour or m
 library for the curses gem (required by dispel) then I'd recommend you run it on a *nix system or a mac
 (or with msys2 on windows).
 
+git repo url: https://git.genesys-solutions.org.uk/aca15er/sokoban
+
 To play run the following commands:
 `bundle install`
 `ruby sokoban.rb`
