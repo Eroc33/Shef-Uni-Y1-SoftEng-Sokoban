@@ -25,14 +25,9 @@ def mk_splash
   splash.write_header('Sokoban', 'Euan Rochester', '0.0.1',{:nameFg=>:yellow,:nameBg=>:black,
                                                             :authorFg=>:yellow,:authorBg=>:black,
                                                             :versionFg=>:magenta,:versionBg=>:black})
+  splash.write_center(-10, "Copyright Euan Rochester 2015")
   splash.write_horizontal_pattern('-',{:fg=>:yellow,:bg=>:black})
   splash.write_vertical_pattern('|',{:fg=>:yellow,:bg=>:black})
-  splash
-end
-
-def mk_win_splash
-  splash = mk_splash
-  splash.write_center(-8, 'You Win!')
   splash
 end
 
@@ -170,4 +165,3 @@ Dispel::Screen.open(:colors => true) do |screen|
   start_level = menu(screen,levels.length)
   main_loop(start_level,levels,screen)
 end
-mk_win_splash.splash
